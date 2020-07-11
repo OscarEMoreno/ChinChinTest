@@ -10,7 +10,7 @@ var PetroBs = 0;
 var Euro = 0;
 var pool;
 
-database = "CoinDB";
+var database = "CoinDB";
 
 
 function ConnectionDB () {
@@ -64,7 +64,7 @@ function getRates() {
 }
 
 
-exports.getCoins = function(req, res) {
+exports.getCoins = function(req, response) {
     //
     getRates().then(rates => {
         console.log(rates);
@@ -77,7 +77,7 @@ exports.getCoins = function(req, res) {
             console.log (err,res);
             //pool.end();
         })
-        res.status(200).json({status: 200, message: "Done"});
+        response.status(200).json({status: 200, message: "Done"}); //Status needs to be verified for errors, this is a placeholder
     });
     
 };
@@ -85,14 +85,13 @@ exports.getCoins = function(req, res) {
 
 
 
-exports.fillCoins = function(req, res) {
+exports.fillCoins = function(req, response) {
     Bitcoin = req.body.btc;
     Ethereum = req.body.eth;
     Dash = req.body.dash;
     Petro = req.body.petro;
     Bs = req.body.bs;
     Euro = req.body.euro;
-    console.log(Euro);
 
     var Modify = "INSERT INTO coins (btc,eth,dash,ptr,bs,euro) VALUES ("+Bitcoin+","+Ethereum+","+Dash+","+Petro+","+Bs+","+Euro+")";
     ConnectionDB();
@@ -101,11 +100,45 @@ exports.fillCoins = function(req, res) {
             //pool.end();
         });
     
-    res.status(200).json({status: 200, message: "Done"});
+    response.status(200).json({status: 200, message: "Done"});
+};
+
+exports.xChange = function(req, response) {
+    var Amount = req.body.amount;
+    var Currency = req.body.currency;
+    var Dollar_ref;
+    var get_last = "SELECT * FROM coins ORDER BY id DESC LIMIT 1";
+    ConnectionDB();
+    pool.query(get_last, (err, res) => {
+            
+
+
+            // input must be sanitized
+            if (Currency === "usd") {Dollar_ref = Amount;}
+            else{
+             // currencies  {"btc","eth", "usd", "euro", "ptr", "bs", "dash"};
+                Dollar_ref = Amount*res["rows"][0][Currency]; // get the reference in USD dollars
+            } 
+            console.log (Amount + " in " + Currency);
+            response.status(200).json(
+            {   usd: Dollar_ref, 
+                eur: (Dollar_ref/res["rows"][0]["euro"]),
+                bs: (Dollar_ref/res["rows"][0]["bs"]),
+                btc: (Dollar_ref/res["rows"][0]["btc"]),
+                eth: (Dollar_ref/res["rows"][0]["eth"]),
+                dash: (Dollar_ref/res["rows"][0]["dash"]),
+                ptr: (Dollar_ref/res["rows"][0]["ptr"]),
+
+            }); 
+            //pool.end();
+
+        });
+    
+    
 };
 
 
-exports.deleteCoins = function(req, res) {
+exports.deleteCoins = function(req, response) {
     
     ConnectionDB();
     var truncate = "TRUNCATE TABLE coins";
@@ -113,5 +146,5 @@ exports.deleteCoins = function(req, res) {
                 console.log (err,res);
                 //pool.end();
             });
-    res.status(200).json({status: 200, message: "Done"});
+    response.status(200).json({status: 200, message: "Done"}); // placeholder
 };

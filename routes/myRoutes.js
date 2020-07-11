@@ -9,6 +9,9 @@ router
 router
   .route('/fillCoinsRate') // manually fill coins value
   .post(myController.fillCoins);
+router
+  .route('/XchangeAmount') // input amount and currency
+  .post(myController.xChange);
 
 router
   .route('/deleteCoinsRate') // delete rates
