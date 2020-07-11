@@ -11,10 +11,6 @@ router
   .post(myController.fillCoins);
 
 router
-  .route('/updateCoinsRate') // update rates
-  .patch(myController.updateCoins);
-
-router
   .route('/deleteCoinsRate') // delete rates
   .delete(myController.deleteCoins);
 

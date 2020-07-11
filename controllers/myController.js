@@ -1,5 +1,5 @@
-var moment = require('moment');
-var pg = require('pg');
+
+const pg = require('pg');
 var request = require('request');
 var Bitcoin = 0;
 var Dash = 0;
@@ -8,12 +8,10 @@ var Petro = 60;
 var Bs = 1/100000;
 var PetroBs = 0;
 var Euro = 0;
+var pool;
 
 database = "CoinDB";
-var pool; 
 
-//createdAt: moment().unix(),
-// expiresAt: moment().add(1,'day').unix()
 
 function ConnectionDB () {
     pool = new pg.Pool({
@@ -68,17 +66,17 @@ function getRates() {
 
 exports.getCoins = function(req, res) {
     //
-    //var Select = 'INSERT INTO users(id, firstName, lastName) VALUES(1, ‘Shahriar’, ‘Shovon’)
-    
     getRates().then(rates => {
         console.log(rates);
         console.log("Finished updating coins");
         if (PetroBs && Petro) {Bs = Petro/PetroBs;}
-        console.log(Bs);
-
+        //console.log(Bs);
+        var Insert = "INSERT INTO coins (btc,eth,dash,ptr,bs,euro) VALUES ("+Bitcoin+","+Ethereum+","+Dash+","+Petro+","+Bs+","+Euro+")";
         ConnectionDB();
-        var Insert = 'INSERT INTO '+database+'.Coins(btc,eth,dash,ptr,bs,euro,added_at) VALUES (Bitcoin,Ethereum,Dash,Petro,Bs,Euro,?)';
-        console.log(moment().unix());
+        pool.query(Insert, (err, res) => {
+            console.log (err,res);
+            //pool.end();
+        })
         res.status(200).json({status: 200, message: "Done"});
     });
     
@@ -87,19 +85,33 @@ exports.getCoins = function(req, res) {
 
 
 
-
-
 exports.fillCoins = function(req, res) {
+    Bitcoin = req.body.btc;
+    Ethereum = req.body.eth;
+    Dash = req.body.dash;
+    Petro = req.body.petro;
+    Bs = req.body.bs;
+    Euro = req.body.euro;
+    console.log(Euro);
+
+    var Modify = "INSERT INTO coins (btc,eth,dash,ptr,bs,euro) VALUES ("+Bitcoin+","+Ethereum+","+Dash+","+Petro+","+Bs+","+Euro+")";
+    ConnectionDB();
+    pool.query(Modify, (err, res) => {
+            console.log (err,res);
+            //pool.end();
+        });
     
-};
-
-
-
-exports.updateCoins = function(req, res) {
-    
+    res.status(200).json({status: 200, message: "Done"});
 };
 
 
 exports.deleteCoins = function(req, res) {
     
+    ConnectionDB();
+    var truncate = "TRUNCATE TABLE coins";
+    pool.query(truncate, (err, res) => {
+                console.log (err,res);
+                //pool.end();
+            });
+    res.status(200).json({status: 200, message: "Done"});
 };
