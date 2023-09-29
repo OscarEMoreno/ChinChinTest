@@ -146,5 +146,5 @@ exports.deleteCoins = function(req, response) {
                 console.log (err,res);
                 //pool.end();
             });
-    response.status(200).json({status: 200, message: "Done"}); // placeholder
+    response.status(200).json({status: 200, message: "Done"}); //
 };
